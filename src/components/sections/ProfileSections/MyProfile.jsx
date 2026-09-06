@@ -1,0 +1,80 @@
+import React from "react";
+import { FaUserCircle } from "react-icons/fa";
+
+function MyProfile() {
+  return (
+    <div className="flex-1 bg-white border border-gray-100 rounded-2xl shadow-lg p-8">
+      <h2 className="text-3xl font-bold text-gray-900">My Profile</h2>
+      <p className="text-gray-500 mt-2">Manage your personal information.</p>
+
+      <div className="flex flex-col items-center py-8 border-b border-gray-200">
+        <FaUserCircle className="text-[120px] text-gray-300" />
+
+        <button className="mt-4 px-6 py-2 border border-emerald-600 text-emerald-600 rounded-lg font-semibold hover:bg-emerald-600 hover:text-white transition duration-200 cursor-pointer">
+          Change Photo
+        </button>
+      </div>
+
+      <form className="mt-8 space-y-5">
+        <div>
+          <label className="block text-sm font-semibold mb-2">Full Name</label>
+          <input
+            type="text"
+            placeholder="Enter Name"
+            className="w-full p-3 border border-gray-300 rounded-lg outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-semibold mb-2">
+            Email Address
+          </label>
+          <input
+            type="email"
+            placeholder="Enter Email Address"
+            className="w-full p-3 border border-gray-300 rounded-lg outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-semibold mb-2">
+            Phone Number
+          </label>
+          <input
+            type="tel"
+            placeholder="+91 XXXXXXXXXX"
+            className="w-full p-3 border border-gray-300 rounded-lg outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-semibold mb-2">
+            Date of Birth
+          </label>
+          <input
+            type="date"
+            className="w-full p-3 border border-gray-300 rounded-lg outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-semibold mb-2">Gender</label>
+          <select className="w-full p-3 border border-gray-300 rounded-lg outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition cursor-pointer">
+            <option>Male</option>
+            <option>Female</option>
+            <option>Others</option>
+          </select>
+        </div>
+
+        <button
+          type="submit"
+          className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-8 py-3 rounded-lg shadow-md hover:shadow-lg transition duration-200 cursor-pointer"
+        >
+          Save Changes
+        </button>
+      </form>
+    </div>
+  );
+}
+
+export default MyProfile;
