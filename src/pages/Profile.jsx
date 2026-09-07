@@ -6,6 +6,7 @@ import { NavLink, useNavigate } from "react-router-dom";
 
 import MyProfile from "../components/sections/ProfileSections/MyProfile";
 import Orders from "../components/sections/ProfileSections/Orders";
+import Wishlist from "../components/sections/ProfileSections/Wishlist";
 
 function Profile() {
   const [activeSection, setActiveSection] = useState("profile");
@@ -61,31 +62,7 @@ function Profile() {
 
           {activeSection === "orders" && <Orders />}
 
-          {activeSection === "wishlist" && (
-            <div className="bg-white border border-gray-100 rounded-2xl shadow-lg p-8">
-              <div className="flex flex-col items-center justify-center py-16 text-center">
-                <div className="w-24 h-24 rounded-full bg-[#EDF8F1] flex items-center justify-center mb-6">
-                  <FaRegHeart className="text-5xl text-emerald-600" />
-                </div>
-
-                <h2 className="text-3xl font-bold text-gray-900 mb-2">
-                  Wishlist Coming Soon
-                </h2>
-
-                <p className="text-gray-500 max-w-md mb-6">
-                  Soon you'll be able to save your favourite products and access
-                  them anytime from your profile.
-                </p>
-
-                <NavLink
-                  to="/products"
-                  className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-6 py-3 rounded-lg transition duration-200"
-                >
-                  Explore Products
-                </NavLink>
-              </div>
-            </div>
-          )}
+          {activeSection === "wishlist" && <Wishlist />}
         </div>
       </div>
     </div>

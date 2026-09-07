@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import logo from "../../assets/images/logo.png";
 import { NavLink } from "react-router-dom";
+import { HiOutlineHeart } from "react-icons/hi";
 
 import {
   HiOutlineHome,
@@ -15,7 +16,9 @@ function Navbar() {
 
   const updateCartCount = () => {
     const cart = JSON.parse(localStorage.getItem("cart")) || [];
-    const total = cart.reduce((sum, item) => sum + item.quantity, 0);
+
+    const total = cart.reduce((sum, item) => sum + (item.quantity || 0), 0);
+
     setCartCount(total);
   };
 
@@ -24,10 +27,12 @@ function Navbar() {
 
     window.addEventListener("focus", updateCartCount);
     window.addEventListener("storage", updateCartCount);
+    window.addEventListener("cartUpdated", updateCartCount);
 
     return () => {
       window.removeEventListener("focus", updateCartCount);
       window.removeEventListener("storage", updateCartCount);
+      window.removeEventListener("cartUpdated", updateCartCount);
     };
   }, []);
 
@@ -39,15 +44,13 @@ function Navbar() {
   return (
     <nav className="sticky top-0 z-50 bg-white/95 backdrop-blur-md mx-3 mt-5 px-6 py-3 rounded-xl shadow-xl flex justify-between items-center">
       {/* Logo */}
-      <div className="flex items-center">
-        <NavLink to="/">
-          <img
-            src={logo}
-            alt="ShopSphere Logo"
-            className="h-15 w-auto cursor-pointer"
-          />
-        </NavLink>
-      </div>
+      <NavLink to="/">
+        <img
+          src={logo}
+          alt="ShopSphere Logo"
+          className="h-15 w-auto cursor-pointer"
+        />
+      </NavLink>
 
       {/* Navigation */}
       <div className="flex items-center gap-8 text-2xl">
@@ -69,12 +72,14 @@ function Navbar() {
         <NavLink to="/cart" className={navClass}>
           <div className="relative">
             <HiOutlineShoppingCart />
+
             {cartCount > 0 && (
               <span className="absolute -top-2 -right-2 bg-emerald-600 text-white w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold">
                 {cartCount}
               </span>
             )}
           </div>
+
           <span className="text-[5px] md:text-sm font-semibold">Cart</span>
         </NavLink>
 

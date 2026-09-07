@@ -8,6 +8,8 @@ import { FaLocationDot, FaPhone } from "react-icons/fa6";
 import { MdMailOutline } from "react-icons/md";
 
 function Footer() {
+  const linkClass = "hover:text-emerald-500 transition";
+
   return (
     <footer className="bg-[#0A0A0A] text-gray-300 mt-10">
       <div className="max-w-7xl mx-auto px-6 lg:px-10 py-12">
@@ -38,38 +40,29 @@ function Footer() {
 
             <ul className="space-y-3 text-sm">
               <li>
-                <NavLink to="/products" className="hover:text-emerald-500">
+                <NavLink to="/products" className={linkClass}>
                   All Products
                 </NavLink>
               </li>
               <li>
-                <NavLink
-                  to="/products?category=1"
-                  className="hover:text-emerald-500"
-                >
+                <NavLink to="/products?category=men" className={linkClass}>
                   Men
                 </NavLink>
               </li>
               <li>
-                <NavLink
-                  to="/products?category=1"
-                  className="hover:text-emerald-500"
-                >
+                <NavLink to="/products?category=women" className={linkClass}>
                   Women
                 </NavLink>
               </li>
               <li>
-                <NavLink
-                  to="/products?category=4"
-                  className="hover:text-emerald-500"
-                >
+                <NavLink to="/products?category=footwear" className={linkClass}>
                   Shoes
                 </NavLink>
               </li>
               <li>
                 <NavLink
-                  to="/products?category=2"
-                  className="hover:text-emerald-500"
+                  to="/products?category=accessories"
+                  className={linkClass}
                 >
                   Accessories
                 </NavLink>
@@ -82,14 +75,30 @@ function Footer() {
             <h2 className="text-lg font-semibold text-white mb-5">Company</h2>
 
             <ul className="space-y-3 text-sm">
-              <li className="hover:text-emerald-500 cursor-pointer">
-                About Us
+              <li>
+                <NavLink to="/coming-soon" className={linkClass}>
+                  About Us
+                </NavLink>
               </li>
-              <li className="hover:text-emerald-500 cursor-pointer">Careers</li>
-              <li className="hover:text-emerald-500 cursor-pointer">Press</li>
-              <li className="hover:text-emerald-500 cursor-pointer">Blog</li>
-              <li className="hover:text-emerald-500 cursor-pointer">
-                Sustainability
+              <li>
+                <NavLink to="/coming-soon" className={linkClass}>
+                  Careers
+                </NavLink>
+              </li>
+              <li>
+                <NavLink to="/coming-soon" className={linkClass}>
+                  Press
+                </NavLink>
+              </li>
+              <li>
+                <NavLink to="/coming-soon" className={linkClass}>
+                  Blog
+                </NavLink>
+              </li>
+              <li>
+                <NavLink to="/coming-soon" className={linkClass}>
+                  Sustainability
+                </NavLink>
               </li>
             </ul>
           </div>
@@ -102,19 +111,29 @@ function Footer() {
 
             <ul className="space-y-3 text-sm">
               <li>
-                <NavLink to="/contact" className="hover:text-emerald-500">
+                <NavLink to="/contact" className={linkClass}>
                   Contact Us
                 </NavLink>
               </li>
-              <li className="hover:text-emerald-500 cursor-pointer">
-                Shipping Policy
+              <li>
+                <NavLink to="/coming-soon" className={linkClass}>
+                  Shipping Policy
+                </NavLink>
               </li>
-              <li className="hover:text-emerald-500 cursor-pointer">
-                Returns & Refunds
+              <li>
+                <NavLink to="/coming-soon" className={linkClass}>
+                  Returns & Refunds
+                </NavLink>
               </li>
-              <li className="hover:text-emerald-500 cursor-pointer">FAQ</li>
-              <li className="hover:text-emerald-500 cursor-pointer">
-                Track Order
+              <li>
+                <NavLink to="/coming-soon" className={linkClass}>
+                  FAQ
+                </NavLink>
+              </li>
+              <li>
+                <NavLink to="/coming-soon" className={linkClass}>
+                  Track Order
+                </NavLink>
               </li>
             </ul>
           </div>
@@ -162,12 +181,13 @@ function Footer() {
           <p>© 2026 ShopSphere. All rights reserved.</p>
 
           <div className="flex gap-6">
-            <span className="hover:text-emerald-500 cursor-pointer">
+            <NavLink to="/coming-soon" className={linkClass}>
               Privacy Policy
-            </span>
-            <span className="hover:text-emerald-500 cursor-pointer">
+            </NavLink>
+
+            <NavLink to="/coming-soon" className={linkClass}>
               Terms of Service
-            </span>
+            </NavLink>
           </div>
         </div>
       </div>

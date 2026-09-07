@@ -6,10 +6,10 @@ import ProductDetails from "./pages/ProductDetails";
 import Cart from "./pages/Cart";
 import Contact from "./pages/Contact";
 import Profile from "./pages/Profile";
-import Login from "./pages/Login";
-import Signup from "./pages/Signup";
 import Navbar from "./components/layouts/Navbar";
 import Footer from "./components/layouts/Footer";
+import Construction from "./pages/Construction";
+import Wishlist from "./components/sections/ProfileSections/Wishlist";
 
 function App() {
   return (
@@ -24,8 +24,8 @@ function App() {
           <Route path="/cart" element={<Cart />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/profile" element={<Profile />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
+          <Route path="/coming-soon" element={<Construction />} />
+          <Route path="/wishlist" element={<Wishlist />} />
         </Routes>
       </main>
     </div>

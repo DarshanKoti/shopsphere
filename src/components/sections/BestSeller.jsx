@@ -2,14 +2,15 @@ import React, { useEffect, useState } from "react";
 import { FaArrowRightLong } from "react-icons/fa6";
 import { NavLink } from "react-router-dom";
 import { MdOutlineShoppingCart } from "react-icons/md";
+import { GoStarFill } from "react-icons/go";
 
 function BestSeller() {
   const [products, setProducts] = useState([]);
 
   useEffect(() => {
-    fetch("https://api.escuelajs.co/api/v1/products?offset=20&limit=6")
+    fetch("https://dummyjson.com/products?limit=6&skip=20")
       .then((res) => res.json())
-      .then((data) => setProducts(data));
+      .then((data) => setProducts(data.products));
   }, []);
 
   const addToCart = (e, product) => {
@@ -26,6 +27,7 @@ function BestSeller() {
     }
 
     localStorage.setItem("cart", JSON.stringify(cart));
+    window.dispatchEvent(new Event("cartUpdated"));
     alert("Added to Cart");
   };
 
@@ -43,53 +45,53 @@ function BestSeller() {
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-5">
-        {products.map((product) => {
-          const rating = (3.5 + (product.id % 15) / 10).toFixed(1);
-          const reviewCount = ((product.id * 13) % 500) + 50;
-
-          return (
-            <NavLink
-              key={product.id}
-              to={`/products/${product.id}`}
-              className="relative border border-gray-100 rounded-2xl overflow-hidden shadow hover:shadow-xl hover:-translate-y-1 transition duration-300"
-            >
+        {products.map((product) => (
+          <NavLink
+            key={product.id}
+            to={`/products/${product.id}`}
+            className="relative border border-gray-100 rounded-2xl overflow-hidden shadow hover:shadow-xl hover:-translate-y-1 transition duration-300"
+          >
+            <div className="relative">
               <img
-                src={product.images[0]}
+                src={product.thumbnail}
                 alt={product.title}
-                className="w-full h-44 object-cover"
+                className="w-full h-44 object-cover bg-gray-100"
               />
 
-              <div className="p-3">
-                <h3 className="font-semibold text-sm">
-                  {product.title.length > 22
-                    ? product.title.slice(0, 20) + "..."
-                    : product.title}
-                </h3>
+              <span className="absolute top-2 left-2 bg-red-500 text-white text-[10px] font-semibold px-2 py-1 rounded-full">
+                -{Math.round(product.discountPercentage)}%
+              </span>
+            </div>
 
-                <p className="text-xs text-gray-500 mb-1">
-                  {product.category?.name}
-                </p>
+            <div className="p-3">
+              <h3 className="font-semibold text-sm">
+                {product.title.length > 22
+                  ? product.title.slice(0, 20) + "..."
+                  : product.title}
+              </h3>
 
-                <p className="text-xs mb-2">
-                  ⭐ {rating} ({reviewCount})
-                </p>
+              <p className="text-xs text-gray-500 capitalize mt-1">
+                {product.category.replace("-", " ")}
+              </p>
 
-                <div className="flex justify-between items-center">
-                  <p className="font-bold text-emerald-600">
-                    ${product.price}.00
-                  </p>
-
-                  <button
-                    onClick={(e) => addToCart(e, product)}
-                    className="bg-gray-100 p-2 rounded-lg hover:bg-emerald-600 hover:text-white transition cursor-pointer"
-                  >
-                    <MdOutlineShoppingCart className="text-lg" />
-                  </button>
-                </div>
+              <div className="flex items-center gap-1 text-xs my-2">
+                <GoStarFill className="text-yellow-400" />
+                {product.rating}
               </div>
-            </NavLink>
-          );
-        })}
+
+              <div className="flex justify-between items-center">
+                <p className="font-bold text-emerald-600">${product.price}</p>
+
+                <button
+                  onClick={(e) => addToCart(e, product)}
+                  className="bg-gray-100 p-2 rounded-lg hover:bg-emerald-600 hover:text-white transition cursor-pointer"
+                >
+                  <MdOutlineShoppingCart className="text-lg" />
+                </button>
+              </div>
+            </div>
+          </NavLink>
+        ))}
       </div>
     </div>
   );

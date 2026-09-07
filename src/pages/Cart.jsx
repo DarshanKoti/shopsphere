@@ -14,12 +14,16 @@ function Cart() {
   const updateCart = (updatedCart) => {
     setCartItems(updatedCart);
     localStorage.setItem("cart", JSON.stringify(updatedCart));
+
+    // Navbar badge update
+    window.dispatchEvent(new Event("cartUpdated"));
   };
 
   const increaseQty = (id) => {
     const updated = cartItems.map((item) =>
       item.id === id ? { ...item, quantity: item.quantity + 1 } : item,
     );
+
     updateCart(updated);
   };
 
@@ -48,6 +52,7 @@ function Cart() {
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-8">
+      {/* Header */}
       <div className="flex items-center gap-3 mb-2">
         <HiOutlineShoppingCart className="text-3xl text-emerald-600" />
         <h1 className="text-3xl font-bold">Shopping Cart</h1>
@@ -60,7 +65,9 @@ function Cart() {
       {cartItems.length === 0 ? (
         <div className="bg-white rounded-2xl border border-gray-100 shadow-lg p-12 text-center">
           <HiOutlineShoppingCart className="text-7xl text-gray-300 mx-auto mb-5" />
+
           <h2 className="text-2xl font-bold mb-2">Your cart is empty</h2>
+
           <p className="text-gray-500 mb-6">
             Looks like you haven't added anything yet.
           </p>
@@ -82,16 +89,20 @@ function Cart() {
                 className="bg-white border border-gray-100 rounded-2xl shadow-md p-4 flex flex-col sm:flex-row gap-5 items-center"
               >
                 <img
-                  src={item.images?.[0] || item.image}
+                  src={item.thumbnail || item.image}
                   alt={item.title}
                   className="w-28 h-28 rounded-xl object-cover bg-gray-100"
                 />
 
                 <div className="flex-1">
                   <h3 className="font-semibold text-lg">{item.title}</h3>
-                  <p className="text-sm text-gray-500">
-                    {item.category?.name || item.category}
+
+                  <p className="text-sm text-gray-500 capitalize">
+                    {typeof item.category === "string"
+                      ? item.category.replace("-", " ")
+                      : item.category?.name}
                   </p>
+
                   <p className="text-emerald-600 font-bold text-lg mt-2">
                     ${item.price}
                   </p>

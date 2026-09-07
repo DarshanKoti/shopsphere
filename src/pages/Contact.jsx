@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { FaPhone } from "react-icons/fa6";
 import { IoMdMail } from "react-icons/io";
 import { TbMapPinFilled } from "react-icons/tb";
+import { FaCheckCircle } from "react-icons/fa";
 
 function Contact() {
   const [formData, setFormData] = useState({
@@ -10,6 +11,8 @@ function Contact() {
     subject: "",
     message: "",
   });
+
+  const [isSubmitted, setIsSubmitted] = useState(false);
 
   const handleChange = (e) => {
     setFormData((prev) => ({
@@ -21,6 +24,8 @@ function Contact() {
   const handleSubmit = (e) => {
     e.preventDefault();
 
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
     if (
       !formData.name.trim() ||
       !formData.email.trim() ||
@@ -31,7 +36,12 @@ function Contact() {
       return;
     }
 
-    alert("Message sent successfully!");
+    if (!emailRegex.test(formData.email)) {
+      alert("Please enter a valid email address.");
+      return;
+    }
+
+    setIsSubmitted(true);
 
     setFormData({
       name: "",
@@ -39,10 +49,13 @@ function Contact() {
       subject: "",
       message: "",
     });
+
+    setTimeout(() => setIsSubmitted(false), 4000);
   };
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-10">
+      {/* Header */}
       <div className="mb-10">
         <h1 className="text-4xl font-bold text-gray-900">Contact Us</h1>
         <p className="mt-3 text-gray-600 max-w-2xl">
@@ -50,6 +63,17 @@ function Contact() {
           support or feedback.
         </p>
       </div>
+
+      {/* Success Message */}
+      {isSubmitted && (
+        <div className="mb-8 flex items-center gap-3 bg-emerald-50 border border-emerald-200 text-emerald-700 px-5 py-4 rounded-xl">
+          <FaCheckCircle className="text-2xl" />
+          <div>
+            <p className="font-semibold">Message sent successfully!</p>
+            <p className="text-sm">We'll get back to you within 24 hours.</p>
+          </div>
+        </div>
+      )}
 
       <div className="grid lg:grid-cols-2 gap-8">
         {/* Contact Form */}
@@ -75,9 +99,6 @@ function Contact() {
                   value={formData.name}
                   onChange={handleChange}
                   placeholder="Enter your name"
-                  autoComplete="off"
-                  spellCheck="false"
-                  required
                   className="w-full p-3 border border-gray-300 rounded-lg outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 transition"
                 />
               </div>
@@ -92,9 +113,6 @@ function Contact() {
                   value={formData.email}
                   onChange={handleChange}
                   placeholder="Enter your email"
-                  autoComplete="off"
-                  spellCheck="false"
-                  required
                   className="w-full p-3 border border-gray-300 rounded-lg outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 transition"
                 />
               </div>
@@ -110,9 +128,6 @@ function Contact() {
                 value={formData.subject}
                 onChange={handleChange}
                 placeholder="What is this about?"
-                autoComplete="off"
-                spellCheck="false"
-                required
                 className="w-full p-3 border border-gray-300 rounded-lg outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 transition"
               />
             </div>
@@ -126,14 +141,13 @@ function Contact() {
                 value={formData.message}
                 onChange={handleChange}
                 placeholder="Type your message here..."
-                required
                 className="w-full h-36 p-3 border border-gray-300 rounded-lg outline-none resize-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 transition"
               />
             </div>
 
             <button
               type="submit"
-              className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 px-8 rounded-lg transition duration-200 shadow-md hover:shadow-lg cursor-pointer"
+              className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 px-8 rounded-lg shadow-md hover:shadow-lg transition cursor-pointer"
             >
               Send Message
             </button>
@@ -158,7 +172,12 @@ function Contact() {
 
                 <div>
                   <h4 className="font-semibold">Phone</h4>
-                  <p className="text-sm text-gray-800">+91 9876543210</p>
+                  <a
+                    href="tel:+919876543210"
+                    className="text-sm text-gray-800 hover:text-emerald-600 transition"
+                  >
+                    +91 9876543210
+                  </a>
                   <p className="text-xs text-gray-500">
                     Mon - Sat, 9:00 AM - 6:00 PM
                   </p>
@@ -172,9 +191,12 @@ function Contact() {
 
                 <div>
                   <h4 className="font-semibold">Email</h4>
-                  <p className="text-sm text-gray-800">
+                  <a
+                    href="mailto:support@shopsphere.com"
+                    className="text-sm text-gray-800 hover:text-emerald-600 transition"
+                  >
                     support@shopsphere.com
-                  </p>
+                  </a>
                   <p className="text-xs text-gray-500">
                     We reply within 24 hours
                   </p>
@@ -188,9 +210,14 @@ function Contact() {
 
                 <div>
                   <h4 className="font-semibold">Our Office</h4>
-                  <p className="text-sm text-gray-800">
+                  <a
+                    href="https://maps.google.com/?q=Electronic+City+Bengaluru"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-gray-800 hover:text-emerald-600 transition"
+                  >
                     123, Tech Park, Electronic City
-                  </p>
+                  </a>
                   <p className="text-xs text-gray-500">
                     Bengaluru, Karnataka - 560100
                   </p>
@@ -202,7 +229,7 @@ function Contact() {
           {/* Google Map */}
           <div className="rounded-2xl overflow-hidden shadow-lg border border-gray-200">
             <iframe
-              src="https://www.google.com/maps?q=Bengaluru,Karnataka&output=embed"
+              src="https://www.google.com/maps?q=Electronic+City+Bengaluru&output=embed"
               width="100%"
               height="320"
               loading="lazy"

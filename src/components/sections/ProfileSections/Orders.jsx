@@ -8,27 +8,33 @@ function Orders() {
   const orders = [
     {
       id: "#ORD-1024",
-      name: "Premium Running Shoes",
+      name: "Nike Air Running Shoes",
       price: "$120",
+      qty: 1,
       date: "05 Sep 2026",
       status: "Delivered",
-      image: "https://i.imgur.com/qNOjJje.jpeg",
+      image:
+        "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=300&auto=format&fit=crop&q=80",
     },
     {
       id: "#ORD-1023",
-      name: "Wireless Headphones",
+      name: "Sony Wireless Headphones",
       price: "$89",
+      qty: 1,
       date: "02 Sep 2026",
       status: "Shipped",
-      image: "https://i.imgur.com/ZANVnHE.jpeg",
+      image:
+        "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=300&auto=format&fit=crop&q=80",
     },
     {
       id: "#ORD-1022",
-      name: "Casual Hoodie",
+      name: "Premium Casual Hoodie",
       price: "$45",
+      qty: 2,
       date: "29 Aug 2026",
       status: "Processing",
-      image: "https://i.imgur.com/9LFjwpI.jpeg",
+      image:
+        "https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=300&auto=format&fit=crop&q=80",
     },
   ];
 
@@ -37,9 +43,9 @@ function Orders() {
       case "Delivered":
         return <FaCheckCircle className="text-green-600" />;
       case "Shipped":
-        return <TbTruckDelivery className="text-blue-600" />;
+        return <TbTruckDelivery className="text-blue-600 text-lg" />;
       default:
-        return <IoTimeOutline className="text-orange-500" />;
+        return <IoTimeOutline className="text-orange-500 text-lg" />;
     }
   };
 
@@ -56,6 +62,7 @@ function Orders() {
 
   return (
     <div className="flex-1 bg-white border border-gray-100 rounded-2xl shadow-lg p-8">
+      {/* Header */}
       <div className="flex items-center gap-3 mb-2">
         <HiOutlineShoppingBag className="text-3xl text-emerald-600" />
         <h2 className="text-3xl font-bold">My Orders</h2>
@@ -69,36 +76,61 @@ function Orders() {
         {orders.map((order) => (
           <div
             key={order.id}
-            className="border border-gray-200 rounded-xl p-4 flex flex-col md:flex-row items-center gap-5 hover:shadow-md transition duration-200"
+            className="border border-gray-200 rounded-2xl p-5 hover:shadow-lg transition duration-300"
           >
-            <img
-              src={order.image}
-              alt={order.name}
-              className="w-24 h-24 object-cover rounded-lg bg-gray-100"
-            />
+            <div className="flex flex-col md:flex-row gap-5 items-center">
+              {/* Product Image */}
+              <img
+                src={order.image}
+                alt={order.name}
+                className="w-28 h-28 rounded-xl object-cover bg-gray-100"
+              />
 
-            <div className="flex-1">
-              <h3 className="font-semibold text-lg">{order.name}</h3>
-              <p className="text-sm text-gray-500">{order.id}</p>
-              <p className="text-sm text-gray-500">Ordered on {order.date}</p>
-            </div>
+              {/* Product Details */}
+              <div className="flex-1">
+                <h3 className="font-bold text-lg">{order.name}</h3>
 
-            <div className="text-center md:text-right">
-              <p className="font-bold text-emerald-600 text-lg">
-                {order.price}
-              </p>
+                <p className="text-sm text-gray-500 mt-1">{order.id}</p>
 
-              <div
-                className={`mt-2 inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium ${statusColor(
-                  order.status,
-                )}`}
-              >
-                {statusIcon(order.status)}
-                {order.status}
+                <p className="text-sm text-gray-500">Ordered on {order.date}</p>
+
+                <p className="text-sm text-gray-500 mt-1">
+                  Quantity: <span className="font-medium">{order.qty}</span>
+                </p>
+              </div>
+
+              {/* Price & Status */}
+              <div className="text-center md:text-right">
+                <p className="text-2xl font-bold text-emerald-600">
+                  {order.price}
+                </p>
+
+                <div
+                  className={`mt-3 inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-semibold ${statusColor(
+                    order.status,
+                  )}`}
+                >
+                  {statusIcon(order.status)}
+                  {order.status}
+                </div>
               </div>
             </div>
           </div>
         ))}
+      </div>
+
+      {/* Footer Summary */}
+      <div className="mt-8 bg-[#EDF8F1] rounded-xl p-5 flex flex-col md:flex-row justify-between items-center">
+        <div>
+          <h3 className="font-bold text-lg">Total Orders</h3>
+          <p className="text-gray-600">
+            You have placed {orders.length} orders.
+          </p>
+        </div>
+
+        <div className="text-3xl font-bold text-emerald-600 mt-3 md:mt-0">
+          {orders.length}
+        </div>
       </div>
     </div>
   );
