@@ -53,17 +53,17 @@ function Navbar() {
       <div className="flex items-center gap-8 text-2xl">
         <NavLink to="/" className={navClass}>
           <HiOutlineHome />
-          <span className="text-sm font-semibold">Home</span>
+          <span className="text-[5px] md:text-sm font-semibold">Home</span>
         </NavLink>
 
         <NavLink to="/products" className={navClass}>
           <HiOutlineShoppingBag />
-          <span className="text-sm font-semibold">Products</span>
+          <span className="text-[5px] md:text-sm font-semibold">Products</span>
         </NavLink>
 
         <NavLink to="/contact" className={navClass}>
           <HiOutlinePhone />
-          <span className="text-sm font-semibold">Contact</span>
+          <span className="text-[5px] md:text-sm font-semibold">Contact</span>
         </NavLink>
 
         <NavLink to="/cart" className={navClass}>
@@ -75,12 +75,12 @@ function Navbar() {
               </span>
             )}
           </div>
-          <span className="text-sm font-semibold">Cart</span>
+          <span className="text-[5px] md:text-sm font-semibold">Cart</span>
         </NavLink>
 
         <NavLink to="/profile" className={navClass}>
           <HiOutlineUser />
-          <span className="text-sm font-semibold">Profile</span>
+          <span className="text-[5px] md:text-sm font-semibold">Profile</span>
         </NavLink>
       </div>
     </nav>

@@ -32,7 +32,7 @@ function Hero() {
             key={index}
             src={img}
             alt={`Hero ${index + 1}`}
-            className="w-full h-[450px] flex-shrink-0 object-cover"
+            className="w-full h-[250px] md:h-[350px] lg:h-[450px] flex-shrink-0 object-contain md:object-cover"
           />
         ))}
       </div>

@@ -46,7 +46,7 @@ function NewsLetter() {
             spellCheck="false"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full sm:w-80 lg:w-96 px-4 py-3 rounded-lg border border-gray-300 bg-white outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 transition"
+            className="w-full sm:w-80 lg:w-96 px-4 py-3 rounded-lg border border-gray-300 bg-white outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 ml-40"
           />
 
           <button

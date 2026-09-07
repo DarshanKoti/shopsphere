@@ -40,23 +40,23 @@ function Categories() {
         </NavLink>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-6">
+      <div className="grid grid-col-1 md:grid-cols-4 lg:grid-cols-8 gap-6 justify-center items-center">
         {CategoriesImages.map((category, index) => (
           <NavLink key={index} to={category.path}>
             <img
               src={category.image}
               alt={`Categories ${index + 1} `}
-              className="h-50 w-40 object-contain rounded-2xl cursor-pointer bg-[#F0F0F1] p-2 hover:scale-105 transition duration-300"
+              className="h-60 w-full (md:h-50 w-40)  object-contain rounded-2xl cursor-pointer bg-[#F0F0F1] p-2 hover:scale-105 transition duration-300"
             />
-            <p className="text-center py-2 text-md cursor-pointer">
+            <p className="text-center py-2 text-md  cursor-pointer">
               {category.name}
             </p>
           </NavLink>
         ))}
       </div>
 
-      <div className="h-25 bg-[#EDF4EE] rounded-xl my-3 grid grid-cols-2 md:grid-cols-4 gap-3">
-        <div className="flex items-center justify-center">
+      <div className="h-40 md:h-25 md:pl-5 bg-[#EDF4EE] rounded-xl my-3 grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="flex items-center justify-center ">
           <MdOutlineLocalShipping className="text-[#5AA973] text-4xl" />
           <div className="flex flex-col items-start mx-3">
             <h3 className="font-semibold">Free Shipping</h3>
@@ -70,14 +70,14 @@ function Categories() {
             <p className="text-sm">30 days return policy</p>
           </div>
         </div>
-        <div className="flex items-center justify-center">
+        <div className="flex items-center justify-center mr-5">
           <RiSecurePaymentLine className="text-[#5AA973] text-4xl" />
           <div className="flex flex-col items-start mx-3">
             <h3 className="font-semibold">Secure Payment</h3>
             <p className="text-sm">100% secure payment</p>
           </div>
         </div>
-        <div className="flex items-center justify-center">
+        <div className="flex items-center justify-center mr-4">
           <BiSupport className="text-[#5AA973] text-4xl" />
           <div className="flex flex-col items-start mx-3">
             <h3 className="font-semibold">24/7 Support</h3>
