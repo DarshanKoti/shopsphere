@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, useLocation } from "react-router-dom";
 
 import Navbar from "./components/layouts/Navbar";
 import Footer from "./components/layouts/Footer";
@@ -12,6 +12,8 @@ import Contact from "./pages/Contact";
 import Construction from "./pages/Construction";
 
 function App() {
+  const location = useLocation();
+
   return (
     <>
       <Navbar />
@@ -26,7 +28,7 @@ function App() {
         <Route path="/coming-soon" element={<Construction />} />
       </Routes>
 
-      <Footer />
+      {location.pathname === "/" && <Footer />}
     </>
   );
 }

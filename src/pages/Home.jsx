@@ -18,7 +18,6 @@ function Home() {
       <BestSeller />
       <Testimonial />
       <NewsLetter />
-      <Footer />
     </>
   );
 }
