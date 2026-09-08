@@ -2,14 +2,14 @@ import React from "react";
 import { FaArrowRightLong } from "react-icons/fa6";
 import { NavLink } from "react-router-dom";
 
-import Cat1 from "../../assets/Categories/Cat1.png";
-import Cat2 from "../../assets/Categories/Cat2.png";
-import Cat3 from "../../assets/Categories/Cat3.png";
-import Cat4 from "../../assets/Categories/Cat4.png";
-import Cat5 from "../../assets/Categories/Cat5.png";
-import Cat6 from "../../assets/Categories/Cat6.png";
-import Cat7 from "../../assets/Categories/Cat7.png";
-import Cat8 from "../../assets/Categories/Cat8.png";
+import Cat1 from "../../assets/Categories/Cat1.webpn";
+import Cat2 from "../../assets/Categories/Cat2.webpn";
+import Cat3 from "../../assets/Categories/Cat3.webpn";
+import Cat4 from "../../assets/Categories/Cat4.webpn";
+import Cat5 from "../../assets/Categories/Cat5.webpn";
+import Cat6 from "../../assets/Categories/Cat6.webpn";
+import Cat7 from "../../assets/Categories/Cat7.webpn";
+import Cat8 from "../../assets/Categories/Cat8.webpn";
 
 // Icons
 import { MdOutlineLocalShipping } from "react-icons/md";
