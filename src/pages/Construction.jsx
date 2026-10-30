@@ -1,4 +1,3 @@
-import React from "react";
 import { NavLink } from "react-router-dom";
 import { MdConstruction } from "react-icons/md";
 import { FaArrowLeft } from "react-icons/fa6";

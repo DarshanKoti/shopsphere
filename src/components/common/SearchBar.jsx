@@ -1,29 +1,28 @@
-import React, { useState } from "react";
 import { HiOutlineSearch } from "react-icons/hi";
 
 function SearchBar({
-  value,
-  onChange = () => {},
-  onSearch = () => {},
+  value = "",
+  onChange,
+  onSearch,
   placeholder = "Search for products, brands and more...",
   width = "w-96",
 }) {
-  const [search, setSearch] = useState("");
-
-  const handleSearch = () => {
-    onSearch(value.trim());
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter" && onSearch) {
+      onSearch(value.trim());
+    }
   };
 
   return (
-    <div className={`flex items-center ${width} `}>
+    <div className={`flex items-center ${width}`}>
       <div className="relative flex-1">
         <HiOutlineSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-xl text-gray-400" />
 
         <input
           type="text"
-          value={value ?? ""}
+          value={value}
           onChange={onChange}
-          onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+          onKeyDown={handleKeyDown}
           placeholder={placeholder}
           autoComplete="off"
           spellCheck="false"

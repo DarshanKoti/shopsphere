@@ -1,45 +1,23 @@
-import React from "react";
 import { MdOutlineShoppingCart } from "react-icons/md";
 import { HiOutlineHeart, HiHeart } from "react-icons/hi";
 import { GoStarFill } from "react-icons/go";
 import { NavLink } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
+import { addToCart } from "../../utils/cart";
+import { toggleWishlist } from "../../utils/wishlist";
+import { formatCategory, shortTitle } from "../../utils/format";
 
-function ProductCard({ product, liked, likedProducts, setLikedProducts }) {
-  const toggleLike = (e) => {
+function ProductCard({ product, liked }) {
+  const { user } = useAuth();
+  // The card is wrapped in a link, so stop the buttons from navigating.
+  const handleLike = (e) => {
     e.preventDefault();
-
-    let wishlist = JSON.parse(localStorage.getItem("wishlist")) || [];
-
-    const exists = wishlist.some((item) => item.id === product.id);
-
-    if (exists) {
-      wishlist = wishlist.filter((item) => item.id !== product.id);
-    } else {
-      wishlist.push(product);
-    }
-
-    localStorage.setItem("wishlist", JSON.stringify(wishlist));
-
-    setLikedProducts(wishlist.map((item) => item.id));
-
-    window.dispatchEvent(new Event("wishlistUpdated"));
+    toggleWishlist(product, user?.id);
   };
 
-  const addToCart = (e) => {
+  const handleAddToCart = (e) => {
     e.preventDefault();
-
-    let cart = JSON.parse(localStorage.getItem("cart")) || [];
-
-    const existing = cart.find((item) => item.id === product.id);
-
-    if (existing) {
-      existing.quantity += 1;
-    } else {
-      cart.push({ ...product, quantity: 1 });
-    }
-
-    localStorage.setItem("cart", JSON.stringify(cart));
-    window.dispatchEvent(new Event("cartUpdated"));
+    addToCart(product, 1, user?.id);
     alert("Added to Cart");
   };
 
@@ -47,7 +25,8 @@ function ProductCard({ product, liked, likedProducts, setLikedProducts }) {
     <NavLink to={`/products/${product.id}`}>
       <div className="relative border border-gray-100 rounded-xl overflow-hidden shadow hover:shadow-xl hover:-translate-y-1 transition duration-300">
         <button
-          onClick={toggleLike}
+          onClick={handleLike}
+          aria-label={liked ? "Remove from wishlist" : "Add to wishlist"}
           className="absolute top-3 right-3 z-10 p-2 rounded-full bg-white shadow text-xl hover:scale-110 transition cursor-pointer"
         >
           {liked ? (
@@ -58,20 +37,16 @@ function ProductCard({ product, liked, likedProducts, setLikedProducts }) {
         </button>
 
         <img
-          src={product.images[0]}
+          src={product.images?.[0] || product.thumbnail}
           alt={product.title}
           className="h-52 w-full object-cover bg-gray-100"
         />
 
         <div className="p-3">
-          <h3 className="font-semibold text-sm">
-            {product.title.length > 22
-              ? product.title.slice(0, 20) + "..."
-              : product.title}
-          </h3>
+          <h3 className="font-semibold text-sm">{shortTitle(product.title)}</h3>
 
           <p className="text-xs text-gray-500 capitalize mt-1">
-            {product.category.replace("-", " ")}
+            {formatCategory(product.category)}
           </p>
 
           <div className="flex items-center justify-between my-3">
@@ -84,7 +59,7 @@ function ProductCard({ product, liked, likedProducts, setLikedProducts }) {
           </div>
 
           <button
-            onClick={addToCart}
+            onClick={handleAddToCart}
             className="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold py-2 rounded-lg transition cursor-pointer"
           >
             <span className="flex items-center justify-center gap-2">

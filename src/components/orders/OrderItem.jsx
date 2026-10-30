@@ -1,13 +1,13 @@
-import { FiEye, FiXCircle } from "react-icons/fi";
+import { FiEye } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 
-function OrderItem({ product, onViewDetails, onCancelProduct }) {
+function OrderItem({ product, onViewDetails }) {
   const navigate = useNavigate();
   const isCancelled = Boolean(product.cancelled);
   const quantity = Number(product.quantity) || 1;
   const price = Number(product.price) || 0;
 
-  const handleProductClick = () => {
+  const openProduct = () => {
     if (product.id != null) {
       navigate(`/products/${product.id}`);
     }
@@ -15,10 +15,9 @@ function OrderItem({ product, onViewDetails, onCancelProduct }) {
 
   return (
     <div className="flex flex-col gap-4 border-t border-gray-100 py-4 sm:flex-row sm:items-center">
-      {/* Clicking the product redirects to its product page */}
       <button
         type="button"
-        onClick={handleProductClick}
+        onClick={openProduct}
         className="flex min-w-0 flex-1 items-center gap-4 text-left"
       >
         <img
@@ -50,11 +49,10 @@ function OrderItem({ product, onViewDetails, onCancelProduct }) {
         </div>
       </button>
 
-      {/* Separate actions */}
       <div className="flex shrink-0 flex-wrap gap-2 sm:flex-col">
         <button
           type="button"
-          onClick={() => onViewDetails(product)}
+          onClick={onViewDetails}
           className="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
         >
           <FiEye size={16} />

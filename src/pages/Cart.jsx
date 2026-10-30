@@ -1,36 +1,33 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { HiOutlineShoppingCart } from "react-icons/hi";
 import { FiMinus, FiPlus, FiTrash2 } from "react-icons/fi";
 import { NavLink } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import { countCartItems, getCart, getTotals, saveCart } from "../utils/cart";
+import { formatCategory } from "../utils/format";
 
 function Cart() {
+  const { user, isAuthenticated } = useAuth();
+
   const [cartItems, setCartItems] = useState([]);
 
   useEffect(() => {
-    const cart = JSON.parse(localStorage.getItem("cart")) || [];
-    setCartItems(cart);
-  }, []);
+    if (isAuthenticated && user?.id) {
+      setCartItems(getCart(user.id));
+    } else {
+      setCartItems([]);
+    }
+  }, [user?.id, isAuthenticated]);
 
-  const updateCart = (updatedCart) => {
-    setCartItems(updatedCart);
-    localStorage.setItem("cart", JSON.stringify(updatedCart));
-
-    // Navbar badge update
-    window.dispatchEvent(new Event("cartUpdated"));
+  const updateCart = (updated) => {
+    setCartItems(updated);
+    saveCart(updated, user?.id);
   };
 
-  const increaseQty = (id) => {
-    const updated = cartItems.map((item) =>
-      item.id === id ? { ...item, quantity: item.quantity + 1 } : item,
-    );
-
-    updateCart(updated);
-  };
-
-  const decreaseQty = (id) => {
+  const changeQuantity = (id, delta) => {
     const updated = cartItems
       .map((item) =>
-        item.id === id ? { ...item, quantity: item.quantity - 1 } : item,
+        item.id === id ? { ...item, quantity: item.quantity + delta } : item,
       )
       .filter((item) => item.quantity > 0);
 
@@ -38,40 +35,47 @@ function Cart() {
   };
 
   const removeItem = (id) => {
-    const updated = cartItems.filter((item) => item.id !== id);
-    updateCart(updated);
+    updateCart(cartItems.filter((item) => item.id !== id));
   };
 
-  const subtotal = cartItems.reduce(
-    (total, item) => total + item.price * item.quantity,
-    0,
-  );
+  const itemCount = countCartItems(cartItems);
+  const { subtotal, shipping, total } = getTotals(cartItems);
 
-  const shipping = subtotal === 0 || subtotal >= 100 ? 0 : 10;
-  const total = subtotal + shipping;
+  if (!isAuthenticated) {
+    return (
+      <div className="max-w-7xl mx-auto px-6 py-16 text-center">
+        <HiOutlineShoppingCart className="text-7xl text-gray-300 mx-auto mb-5" />
+        <h2 className="text-2xl font-bold mb-3">
+          Please login to view your cart
+        </h2>
+        <NavLink
+          to="/login"
+          className="inline-block bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-6 py-3 rounded-lg"
+        >
+          Login
+        </NavLink>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-8">
-      {/* Header */}
       <div className="flex items-center gap-3 mb-2">
         <HiOutlineShoppingCart className="text-3xl text-emerald-600" />
         <h1 className="text-3xl font-bold">Shopping Cart</h1>
       </div>
 
       <p className="text-gray-500 mb-8">
-        You have {cartItems.length} items in your cart.
+        You have {itemCount} {itemCount === 1 ? "item" : "items"} in your cart.
       </p>
 
       {cartItems.length === 0 ? (
         <div className="bg-white rounded-2xl border border-gray-100 shadow-lg p-12 text-center">
           <HiOutlineShoppingCart className="text-7xl text-gray-300 mx-auto mb-5" />
-
           <h2 className="text-2xl font-bold mb-2">Your cart is empty</h2>
-
           <p className="text-gray-500 mb-6">
             Looks like you haven't added anything yet.
           </p>
-
           <NavLink
             to="/products"
             className="inline-block bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-6 py-3 rounded-lg transition"
@@ -81,7 +85,6 @@ function Cart() {
         </div>
       ) : (
         <div className="grid lg:grid-cols-[2fr_1fr] gap-8">
-          {/* Cart Items */}
           <div className="space-y-5">
             {cartItems.map((item) => (
               <div
@@ -96,13 +99,9 @@ function Cart() {
 
                 <div className="flex-1">
                   <h3 className="font-semibold text-lg">{item.title}</h3>
-
                   <p className="text-sm text-gray-500 capitalize">
-                    {typeof item.category === "string"
-                      ? item.category.replace("-", " ")
-                      : item.category?.name}
+                    {formatCategory(item.category)}
                   </p>
-
                   <p className="text-emerald-600 font-bold text-lg mt-2">
                     ${item.price}
                   </p>
@@ -111,7 +110,8 @@ function Cart() {
                 <div className="flex flex-col items-center gap-3">
                   <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden">
                     <button
-                      onClick={() => decreaseQty(item.id)}
+                      onClick={() => changeQuantity(item.id, -1)}
+                      aria-label="Decrease quantity"
                       className="p-2 hover:bg-gray-100 cursor-pointer"
                     >
                       <FiMinus />
@@ -120,7 +120,8 @@ function Cart() {
                     <span className="px-4 font-semibold">{item.quantity}</span>
 
                     <button
-                      onClick={() => increaseQty(item.id)}
+                      onClick={() => changeQuantity(item.id, 1)}
+                      aria-label="Increase quantity"
                       className="p-2 hover:bg-gray-100 cursor-pointer"
                     >
                       <FiPlus />
@@ -139,7 +140,6 @@ function Cart() {
             ))}
           </div>
 
-          {/* Order Summary */}
           <div className="bg-white border border-gray-100 rounded-2xl shadow-lg p-6 h-fit sticky top-24">
             <h2 className="text-2xl font-bold mb-6">Order Summary</h2>
 

@@ -1,7 +1,12 @@
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
+
+import { useAuth } from "./context/AuthContext";
 
 import Navbar from "./components/layouts/Navbar";
 import Footer from "./components/layouts/Footer";
+
+import Login from "./pages/auth/Login";
+import Signup from "./pages/auth/Signup";
 
 import Home from "./pages/Home";
 import Products from "./pages/Products";
@@ -12,25 +17,52 @@ import Contact from "./pages/Contact";
 import Construction from "./pages/Construction";
 import Billing from "./pages/Billing";
 
+import About from "./pages/About";
+
 function App() {
+  const { isAuthenticated } = useAuth();
+  const location = useLocation();
+
+  const protectedPage = (page) =>
+    isAuthenticated ? page : <Navigate to="/login" replace />;
+
+  const publicPage = (page) =>
+    isAuthenticated ? <Navigate to="/" replace /> : page;
+
   return (
     <>
-      <Navbar />
+      {isAuthenticated && <Navbar />}
 
       <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/products" element={<Products />} />
-        <Route path="/products/:id" element={<ProductDetails />} />
-        <Route path="/cart" element={<Cart />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/contact" element={<Contact />} />
-        <Route path="/coming-soon" element={<Construction />} />
-        <Route path="/billing" element={<Billing />} />
+        <Route path="/login" element={publicPage(<Login />)} />
+        <Route path="/signup" element={publicPage(<Signup />)} />
 
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="/" element={protectedPage(<Home />)} />
+
+        <Route path="/products" element={protectedPage(<Products />)} />
+
+        <Route
+          path="/products/:id"
+          element={protectedPage(<ProductDetails />)}
+        />
+
+        <Route path="/cart" element={protectedPage(<Cart />)} />
+        <Route path="/profile" element={protectedPage(<Profile />)} />
+        <Route path="/contact" element={protectedPage(<Contact />)} />
+
+        <Route path="/coming-soon" element={protectedPage(<Construction />)} />
+
+        <Route path="/billing" element={protectedPage(<Billing />)} />
+
+        <Route path="/about" element={<About />} />
+
+        <Route
+          path="*"
+          element={<Navigate to={isAuthenticated ? "/" : "/login"} replace />}
+        />
       </Routes>
 
-      <Footer />
+      {isAuthenticated && <Footer />}
     </>
   );
 }

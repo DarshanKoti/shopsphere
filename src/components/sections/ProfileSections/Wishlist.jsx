@@ -1,47 +1,63 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { FaRegHeart } from "react-icons/fa";
 import { MdOutlineShoppingCart } from "react-icons/md";
 import { GoStarFill } from "react-icons/go";
 import { NavLink } from "react-router-dom";
+import { useAuth } from "../../../context/AuthContext";
+import { addToCart } from "../../../utils/cart";
+import { getWishlist, removeFromWishlist } from "../../../utils/wishlist";
+import { formatCategory, shortTitle } from "../../../utils/format";
 
 function Wishlist() {
+  const { user, isAuthenticated } = useAuth();
+
   const [wishlist, setWishlist] = useState([]);
 
   useEffect(() => {
-    const loadWishlist = () => {
-      const items = JSON.parse(localStorage.getItem("wishlist")) || [];
-      setWishlist(items);
+    const sync = () => {
+      if (isAuthenticated && user?.id) {
+        setWishlist(getWishlist(user.id));
+      } else {
+        setWishlist([]);
+      }
     };
 
-    loadWishlist();
+    sync();
 
-    window.addEventListener("wishlistUpdated", loadWishlist);
+    window.addEventListener("wishlistUpdated", sync);
 
-    return () => window.removeEventListener("wishlistUpdated", loadWishlist);
-  }, []);
+    return () => {
+      window.removeEventListener("wishlistUpdated", sync);
+    };
+  }, [user?.id, isAuthenticated]);
 
-  const removeFromWishlist = (id) => {
-    const updated = wishlist.filter((item) => item.id !== id);
-    localStorage.setItem("wishlist", JSON.stringify(updated));
-    setWishlist(updated);
-    window.dispatchEvent(new Event("wishlistUpdated"));
-  };
+  const handleAddToCart = (product) => {
+    if (!user?.id) return;
 
-  const addToCart = (product) => {
-    let cart = JSON.parse(localStorage.getItem("cart")) || [];
-
-    const existing = cart.find((item) => item.id === product.id);
-
-    if (existing) {
-      existing.quantity += 1;
-    } else {
-      cart.push({ ...product, quantity: 1 });
-    }
-
-    localStorage.setItem("cart", JSON.stringify(cart));
-    window.dispatchEvent(new Event("cartUpdated"));
+    addToCart(product, 1, user.id);
     alert("Added to Cart");
   };
+
+  const handleRemove = (productId) => {
+    if (!user?.id) return;
+
+    removeFromWishlist(productId, user.id);
+  };
+
+  if (!isAuthenticated) {
+    return (
+      <div className="bg-white border border-gray-100 rounded-2xl shadow-lg p-8 text-center">
+        <FaRegHeart className="text-5xl text-emerald-600 mx-auto mb-5" />
+        <h2 className="text-2xl font-bold mb-3">Login to view your wishlist</h2>
+        <NavLink
+          to="/login"
+          className="inline-block bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-6 py-3 rounded-lg"
+        >
+          Login
+        </NavLink>
+      </div>
+    );
+  }
 
   if (wishlist.length === 0) {
     return (
@@ -91,13 +107,11 @@ function Wishlist() {
 
             <div className="p-3">
               <h3 className="font-semibold text-sm">
-                {product.title.length > 22
-                  ? product.title.slice(0, 20) + "..."
-                  : product.title}
+                {shortTitle(product.title)}
               </h3>
 
               <p className="text-xs text-gray-500 capitalize mt-1">
-                {product.category.replace(/-/g, " ")}
+                {formatCategory(product.category)}
               </p>
 
               <div className="flex items-center justify-between my-3">
@@ -110,7 +124,7 @@ function Wishlist() {
               </div>
 
               <button
-                onClick={() => addToCart(product)}
+                onClick={() => handleAddToCart(product)}
                 className="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold py-2 rounded-lg transition flex items-center justify-center gap-2 cursor-pointer"
               >
                 <MdOutlineShoppingCart />
@@ -118,7 +132,7 @@ function Wishlist() {
               </button>
 
               <button
-                onClick={() => removeFromWishlist(product.id)}
+                onClick={() => handleRemove(product.id)}
                 className="w-full mt-2 border border-red-300 text-red-500 hover:bg-red-500 hover:text-white text-sm font-semibold py-2 rounded-lg transition cursor-pointer"
               >
                 Remove

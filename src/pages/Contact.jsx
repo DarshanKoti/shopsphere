@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { FaPhone } from "react-icons/fa6";
 import { IoMdMail } from "react-icons/io";
 import { TbMapPinFilled } from "react-icons/tb";
@@ -55,7 +55,6 @@ function Contact() {
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-10">
-      {/* Header */}
       <div className="mb-10">
         <h1 className="text-4xl font-bold text-gray-900">Contact Us</h1>
         <p className="mt-3 text-gray-600 max-w-2xl">
@@ -64,7 +63,6 @@ function Contact() {
         </p>
       </div>
 
-      {/* Success Message */}
       {isSubmitted && (
         <div className="mb-8 flex items-center gap-3 bg-emerald-50 border border-emerald-200 text-emerald-700 px-5 py-4 rounded-xl">
           <FaCheckCircle className="text-2xl" />
@@ -76,7 +74,6 @@ function Contact() {
       )}
 
       <div className="grid lg:grid-cols-2 gap-8">
-        {/* Contact Form */}
         <div className="bg-white border border-gray-100 rounded-2xl shadow-lg p-7">
           <h2 className="text-2xl font-bold text-gray-900">
             Send us a Message
@@ -154,7 +151,6 @@ function Contact() {
           </form>
         </div>
 
-        {/* Contact Info */}
         <div className="flex flex-col gap-6">
           <div className="bg-[#EFF8F3] border border-emerald-100 rounded-2xl shadow-lg p-7">
             <h2 className="text-2xl font-bold text-gray-900">Get in Touch</h2>
@@ -226,7 +222,6 @@ function Contact() {
             </div>
           </div>
 
-          {/* Google Map */}
           <div className="rounded-2xl overflow-hidden shadow-lg border border-gray-200">
             <iframe
               src="https://www.google.com/maps?q=Electronic+City+Bengaluru&output=embed"

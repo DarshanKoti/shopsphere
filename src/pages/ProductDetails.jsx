@@ -1,58 +1,89 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { NavLink, useParams } from "react-router-dom";
 import { FiMinus, FiPlus } from "react-icons/fi";
 import { GoStarFill } from "react-icons/go";
 import { MdOutlineShoppingCart } from "react-icons/md";
+import { addToCart } from "../utils/cart";
+import { useAuth } from "../context/AuthContext";
+import { formatCategory, shortTitle } from "../utils/format";
 
 function ProductDetails() {
+  const { user } = useAuth();
   const { id } = useParams();
 
   const [product, setProduct] = useState(null);
   const [relatedProducts, setRelatedProducts] = useState([]);
   const [selectedImage, setSelectedImage] = useState("");
   const [quantity, setQuantity] = useState(1);
+  const [notFound, setNotFound] = useState(false);
 
-  // Product Fetch
   useEffect(() => {
+    let ignore = false;
+
+    setProduct(null);
+    setNotFound(false);
+
     fetch(`https://dummyjson.com/products/${id}`)
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) throw new Error("Product not found");
+        return res.json();
+      })
       .then((data) => {
+        if (ignore) return;
         setProduct(data);
         setSelectedImage(data.images[0]);
         setQuantity(1);
+      })
+      .catch(() => {
+        if (!ignore) setNotFound(true);
       });
+
+    return () => {
+      ignore = true;
+    };
   }, [id]);
 
-  // Related Products (Same Category)
   useEffect(() => {
     if (!product) return;
+
+    let ignore = false;
 
     fetch(`https://dummyjson.com/products/category/${product.category}`)
       .then((res) => res.json())
       .then((data) => {
-        const related = data.products
-          .filter((item) => item.id !== product.id)
-          .slice(0, 4);
+        if (ignore) return;
 
-        setRelatedProducts(related);
+        setRelatedProducts(
+          data.products.filter((item) => item.id !== product.id).slice(0, 4),
+        );
+      })
+      .catch(() => {
+        if (!ignore) setRelatedProducts([]);
       });
+
+    return () => {
+      ignore = true;
+    };
   }, [product]);
 
-  const addToCart = () => {
-    let cart = JSON.parse(localStorage.getItem("cart")) || [];
-
-    const existing = cart.find((item) => item.id === product.id);
-
-    if (existing) {
-      existing.quantity += quantity;
-    } else {
-      cart.push({ ...product, quantity });
-    }
-
-    localStorage.setItem("cart", JSON.stringify(cart));
-    window.dispatchEvent(new Event("cartUpdated"));
+  const handleAddToCart = () => {
+    addToCart(product, quantity, user?.id);
     alert("Added to Cart");
   };
+
+  if (notFound) {
+    return (
+      <div className="text-center py-20">
+        <h1 className="text-2xl font-bold">Product not found</h1>
+        <NavLink
+          to="/products"
+          className="inline-block mt-6 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-6 py-3 rounded-lg transition"
+        >
+          Back to products
+        </NavLink>
+      </div>
+    );
+  }
 
   if (!product) {
     return (
@@ -64,9 +95,7 @@ function ProductDetails() {
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-8">
-      {/* Main Section */}
       <div className="grid lg:grid-cols-2 gap-12">
-        {/* Images */}
         <div>
           <div className="bg-gray-100 rounded-2xl overflow-hidden">
             <img
@@ -93,10 +122,9 @@ function ProductDetails() {
           </div>
         </div>
 
-        {/* Details */}
         <div className="flex flex-col gap-5">
           <span className="text-emerald-600 font-semibold capitalize">
-            {product.category.replace(/-/g, " ")}
+            {formatCategory(product.category)}
           </span>
 
           <h1 className="text-4xl font-bold">{product.title}</h1>
@@ -107,9 +135,11 @@ function ProductDetails() {
               <span className="font-semibold">{product.rating}</span>
             </div>
 
-            <span className="text-gray-500">
-              Brand: <span className="font-medium">{product.brand}</span>
-            </span>
+            {product.brand && (
+              <span className="text-gray-500">
+                Brand: <span className="font-medium">{product.brand}</span>
+              </span>
+            )}
           </div>
 
           <div className="flex items-center gap-4">
@@ -134,13 +164,13 @@ function ProductDetails() {
             </p>
           </div>
 
-          {/* Quantity */}
           <div>
             <h3 className="font-semibold mb-3">Quantity</h3>
 
             <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden w-fit">
               <button
-                onClick={() => quantity > 1 && setQuantity(quantity - 1)}
+                onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                aria-label="Decrease quantity"
                 className="p-3 hover:bg-gray-100 cursor-pointer"
               >
                 <FiMinus />
@@ -149,7 +179,8 @@ function ProductDetails() {
               <span className="px-5 font-semibold">{quantity}</span>
 
               <button
-                onClick={() => setQuantity(quantity + 1)}
+                onClick={() => setQuantity((q) => q + 1)}
+                aria-label="Increase quantity"
                 className="p-3 hover:bg-gray-100 cursor-pointer"
               >
                 <FiPlus />
@@ -158,7 +189,7 @@ function ProductDetails() {
           </div>
 
           <button
-            onClick={addToCart}
+            onClick={handleAddToCart}
             className="bg-emerald-600 hover:bg-emerald-700 text-white py-4 rounded-xl font-semibold flex items-center justify-center gap-2 transition cursor-pointer"
           >
             <MdOutlineShoppingCart className="text-xl" />
@@ -178,7 +209,6 @@ function ProductDetails() {
         </div>
       </div>
 
-      {/* Related Products */}
       {relatedProducts.length > 0 && (
         <div className="mt-20">
           <h2 className="text-2xl font-bold mb-6">Related Products</h2>
@@ -198,13 +228,11 @@ function ProductDetails() {
 
                 <div className="p-3">
                   <h3 className="font-semibold text-sm">
-                    {item.title.length > 22
-                      ? item.title.slice(0, 20) + "..."
-                      : item.title}
+                    {shortTitle(item.title)}
                   </h3>
 
                   <p className="text-xs text-gray-500 capitalize mt-1">
-                    {item.category.replace(/-/g, " ")}
+                    {formatCategory(item.category)}
                   </p>
 
                   <div className="flex items-center justify-between mt-3">

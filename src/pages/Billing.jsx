@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useEffect, useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import {
   HiOutlineLocationMarker,
@@ -10,47 +10,133 @@ import { MdOutlineShoppingBag, MdOutlinePayment } from "react-icons/md";
 import { FaCheckCircle, FaCreditCard } from "react-icons/fa";
 import { SiGooglepay } from "react-icons/si";
 
-function readCart() {
-  try {
-    const saved = JSON.parse(localStorage.getItem("cart") || "[]");
-    return Array.isArray(saved) ? saved : [];
-  } catch {
-    return [];
-  }
-}
+import { useAuth } from "../context/AuthContext";
+import { getCart, getTotals, saveCart } from "../utils/cart";
+import { readList, readJSON, writeJSON } from "../utils/storage";
+
+const PAYMENT_METHODS = [
+  {
+    id: "UPI",
+    title: "Demo UPI",
+    description: "Simulated UPI payment",
+    icon: <SiGooglepay className="text-2xl text-gray-800" />,
+  },
+  {
+    id: "Card",
+    title: "Demo Card",
+    description: "Simulated card payment",
+    icon: <FaCreditCard className="text-xl text-gray-700" />,
+  },
+];
+
+const getProfileKey = (userId) => `profile_${userId}`;
+
+const getProfile = (user) => {
+  if (!user?.id) return {};
+
+  return readJSON(getProfileKey(user.id), {});
+};
+
+const getInitialFormData = (user) => {
+  const profile = getProfile(user);
+  const address = profile.address || {};
+
+  return {
+    fullName: profile.name || user?.name || "",
+    email: profile.email || user?.email || "",
+    phone: profile.phone || "",
+    alternatePhone: profile.alternatePhone || "",
+    house: address.house || "",
+    street: address.street || "",
+    landmark: address.landmark || "",
+    city: address.city || "",
+    state: address.state || "",
+    pincode: address.pincode || "",
+    country: address.country || "India",
+    address: [address.house, address.street, address.landmark]
+      .filter(Boolean)
+      .join(", "),
+  };
+};
 
 function Billing() {
   const navigate = useNavigate();
+  const { user } = useAuth();
 
-  const [cart] = useState(readCart);
+  const [cart, setCart] = useState(() => getCart(user?.id));
   const [step, setStep] = useState("delivery");
   const [paymentMethod, setPaymentMethod] = useState("UPI");
   const [paymentError, setPaymentError] = useState("");
   const [order, setOrder] = useState(null);
 
-  const [formData, setFormData] = useState({
-    fullName: "",
-    email: "",
-    phone: "",
-    address: "",
-    city: "",
-    state: "",
-    pincode: "",
-  });
+  const [formData, setFormData] = useState(() => getInitialFormData(user));
 
-  const subtotal = cart.reduce(
-    (sum, item) => sum + Number(item.price || 0) * Number(item.quantity || 1),
-    0,
-  );
+  // Refresh checkout details when the logged-in account changes
+  useEffect(() => {
+    setFormData(getInitialFormData(user));
+    setCart(getCart(user?.id));
+    setStep("delivery");
+    setOrder(null);
+    setPaymentError("");
+  }, [user?.id]);
 
-  const shipping = subtotal === 0 || subtotal >= 100 ? 0 : 10;
-  const total = subtotal + shipping;
+  const { subtotal, shipping, total } = getTotals(cart);
+
+  const inputClass =
+    "w-full rounded-lg border border-gray-300 bg-white px-3.5 py-3 text-sm outline-none transition focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100";
 
   const handleChange = (e) => {
-    setFormData((prev) => ({
-      ...prev,
-      [e.target.name]: e.target.value,
-    }));
+    const { name, value } = e.target;
+
+    setFormData((prev) => {
+      const updated = {
+        ...prev,
+        [name]: value,
+      };
+
+      // Keep the combined address updated
+      if (["house", "street", "landmark"].includes(name)) {
+        updated.address = [
+          name === "house" ? value : updated.house,
+          name === "street" ? value : updated.street,
+          name === "landmark" ? value : updated.landmark,
+        ]
+          .filter(Boolean)
+          .join(", ");
+      }
+
+      return updated;
+    });
+  };
+
+  // Save checkout details back to the current user's profile
+  const saveDeliveryToProfile = () => {
+    if (!user?.id) return;
+
+    const profileKey = getProfileKey(user.id);
+    const existingProfile = getProfile(user);
+
+    const updatedProfile = {
+      ...existingProfile,
+      name: formData.fullName.trim(),
+      email: formData.email.trim(),
+      phone: formData.phone.trim(),
+      alternatePhone: formData.alternatePhone.trim(),
+      address: {
+        ...(existingProfile.address || {}),
+        house: formData.house.trim(),
+        street: formData.street.trim(),
+        landmark: formData.landmark.trim(),
+        city: formData.city.trim(),
+        state: formData.state.trim(),
+        pincode: formData.pincode.trim(),
+        country: formData.country.trim(),
+      },
+    };
+
+    writeJSON(profileKey, updatedProfile);
+
+    window.dispatchEvent(new Event("profileUpdated"));
   };
 
   const continueToPayment = (e) => {
@@ -60,6 +146,9 @@ function Billing() {
       navigate("/products");
       return;
     }
+
+    // Persist updated delivery details to the user's profile
+    saveDeliveryToProfile();
 
     setPaymentError("");
     setStep("payment");
@@ -76,23 +165,29 @@ function Billing() {
     }
 
     try {
-      const previousOrders = JSON.parse(localStorage.getItem("orders") || "[]");
+      if (!user?.id) throw new Error("Please sign in before placing an order.");
 
-      if (!Array.isArray(previousOrders)) {
-        throw new Error("Invalid order history");
-      }
-
-      const orderId = `ORD-${Date.now()}`;
+      const ordersKey = `orders_${user.id}`;
+      const previousOrders = readList(ordersKey);
 
       const orderedAt = new Date();
       const estimatedDelivery = new Date(orderedAt);
-
       estimatedDelivery.setDate(estimatedDelivery.getDate() + 5);
 
+      const customer = {
+        ...formData,
+        fullName: formData.fullName.trim(),
+        email: formData.email.trim(),
+        phone: formData.phone.trim(),
+        address: [formData.house, formData.street, formData.landmark]
+          .filter(Boolean)
+          .join(", "),
+      };
+
       const newOrder = {
-        // Keep your existing order fields
-        id: orderId,
-        customer: { ...formData },
+        id: `ORD-${Date.now()}`,
+        userId: user?.id || null,
+        customer,
         items: cart,
         subtotal,
         shipping,
@@ -104,20 +199,14 @@ function Billing() {
         estimatedDelivery: estimatedDelivery.toISOString(),
       };
 
-      // Save only after the user simulates successful payment.
-      localStorage.setItem(
-        "orders",
-        JSON.stringify([newOrder, ...previousOrders]),
-      );
-
-      localStorage.setItem("cart", JSON.stringify([]));
-
-      window.dispatchEvent(new Event("cartUpdated"));
-      window.dispatchEvent(new Event("ordersUpdated"));
+      writeJSON(ordersKey, [newOrder, ...previousOrders]);
+      saveCart([], user.id);
+      setCart([]);
 
       setOrder(newOrder);
       setPaymentError("");
       setStep("success");
+
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch {
       setPaymentError(
@@ -126,20 +215,19 @@ function Billing() {
     }
   };
 
-  const inputClass =
-    "w-full rounded-lg border border-gray-300 bg-white px-3.5 py-3 text-sm outline-none transition focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100";
-
-  // Empty cart
   if (!cart.length && step !== "success") {
     return (
       <main className="max-w-3xl mx-auto px-5 py-20 text-center">
         <MdOutlineShoppingBag className="mx-auto text-6xl text-gray-300" />
+
         <h1 className="mt-5 text-2xl font-bold text-gray-900">
           Your cart is empty
         </h1>
+
         <p className="mt-2 text-gray-500">
           Add something you love before heading to checkout.
         </p>
+
         <NavLink
           to="/products"
           className="inline-block mt-6 rounded-lg bg-emerald-600 px-6 py-3 text-sm font-semibold text-white hover:bg-emerald-700"
@@ -150,7 +238,6 @@ function Billing() {
     );
   }
 
-  // Order confirmation
   if (step === "success" && order) {
     return (
       <main className="max-w-xl mx-auto px-5 py-16 sm:py-24">
@@ -225,22 +312,23 @@ function Billing() {
   return (
     <main className="min-h-screen bg-gray-50/70">
       <div className="max-w-6xl mx-auto px-5 py-9 sm:py-12">
-        {/* Page heading */}
         <div className="mb-8">
           <p className="text-xs font-semibold tracking-widest text-emerald-700 uppercase">
             ShopSphere / Checkout
           </p>
+
           <h1 className="mt-2 text-3xl sm:text-4xl font-bold tracking-tight text-gray-900">
             {step === "delivery" ? "Checkout" : "Complete your payment"}
           </h1>
+
           <p className="mt-2 text-sm text-gray-500">
             {step === "delivery"
-              ? "Confirm your delivery details before continuing."
+              ? "Your saved profile details are filled in automatically."
               : "Review your order and simulate a demo payment."}
           </p>
         </div>
 
-        {/* Checkout steps */}
+        {/* Checkout Steps */}
         <div className="mb-8 flex max-w-lg items-center gap-3">
           <div className="flex items-center gap-2">
             <span className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-600 text-sm font-semibold text-white">
@@ -261,6 +349,7 @@ function Billing() {
             >
               2
             </span>
+
             <span
               className={`text-sm ${
                 step === "payment"
@@ -274,26 +363,31 @@ function Billing() {
         </div>
 
         <div className="grid items-start gap-7 lg:grid-cols-[1fr_350px]">
-          {/* Main panel */}
+          {/* Delivery and Payment Section */}
           <section className="rounded-xl border border-gray-200 bg-white p-5 sm:p-7">
             {step === "delivery" ? (
               <form onSubmit={continueToPayment}>
                 <div className="mb-6 flex items-center gap-3">
                   <HiOutlineLocationMarker className="text-2xl text-emerald-700" />
+
                   <div>
                     <h2 className="font-semibold text-gray-900">
                       Delivery information
                     </h2>
                     <p className="mt-1 text-sm text-gray-500">
-                      Where should we send your order?
+                      Your saved profile details are editable here.
                     </p>
                   </div>
                 </div>
 
+                {/* Personal Information */}
+                <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-gray-500">
+                  Personal Information
+                </h3>
+
                 <div className="grid gap-5 sm:grid-cols-2">
                   <label className="sm:col-span-2 block text-sm font-medium text-gray-700">
-                    Full name
-                    <span className="ml-1 text-red-500">*</span>
+                    Full name *
                     <span className="relative mt-2 block">
                       <HiOutlineUser className="absolute left-3 top-3.5 text-lg text-gray-400" />
                       <input
@@ -310,7 +404,7 @@ function Billing() {
                   </label>
 
                   <label className="block text-sm font-medium text-gray-700">
-                    Email address
+                    Email address *
                     <span className="relative mt-2 block">
                       <HiOutlineMail className="absolute left-3 top-3.5 text-lg text-gray-400" />
                       <input
@@ -327,7 +421,7 @@ function Billing() {
                   </label>
 
                   <label className="block text-sm font-medium text-gray-700">
-                    Phone number
+                    Phone number *
                     <span className="relative mt-2 block">
                       <HiOutlinePhone className="absolute left-3 top-3.5 text-lg text-gray-400" />
                       <input
@@ -346,23 +440,65 @@ function Billing() {
                     </span>
                   </label>
 
-                  <label className="sm:col-span-2 block text-sm font-medium text-gray-700">
-                    Street address
-                    <textarea
-                      name="address"
-                      value={formData.address}
+                  <label className="block text-sm font-medium text-gray-700 sm:col-span-2">
+                    Alternate phone number
+                    <input
+                      type="tel"
+                      name="alternatePhone"
+                      value={formData.alternatePhone}
                       onChange={handleChange}
-                      autoComplete="street-address"
-                      maxLength={300}
-                      rows={3}
+                      autoComplete="tel"
+                      placeholder="Optional alternate number"
+                      className={`${inputClass} mt-2`}
+                    />
+                  </label>
+                </div>
+
+                {/* Delivery Address */}
+                <h3 className="mb-4 mt-8 border-t border-gray-200 pt-6 text-sm font-semibold uppercase tracking-wide text-gray-500">
+                  Shipping Address
+                </h3>
+
+                <div className="grid gap-5 sm:grid-cols-2">
+                  <label className="block text-sm font-medium text-gray-700">
+                    House / Flat Number *
+                    <input
+                      name="house"
+                      value={formData.house}
+                      onChange={handleChange}
+                      autoComplete="address-line1"
                       required
-                      placeholder="House number, street and area"
-                      className={`${inputClass} mt-2 resize-y`}
+                      placeholder="House / Flat number"
+                      className={`${inputClass} mt-2`}
                     />
                   </label>
 
                   <label className="block text-sm font-medium text-gray-700">
-                    City
+                    Street / Area *
+                    <input
+                      name="street"
+                      value={formData.street}
+                      onChange={handleChange}
+                      autoComplete="address-line2"
+                      required
+                      placeholder="Street or area"
+                      className={`${inputClass} mt-2`}
+                    />
+                  </label>
+
+                  <label className="block text-sm font-medium text-gray-700 sm:col-span-2">
+                    Landmark
+                    <input
+                      name="landmark"
+                      value={formData.landmark}
+                      onChange={handleChange}
+                      placeholder="Nearby landmark"
+                      className={`${inputClass} mt-2`}
+                    />
+                  </label>
+
+                  <label className="block text-sm font-medium text-gray-700">
+                    City *
                     <input
                       name="city"
                       value={formData.city}
@@ -376,7 +512,7 @@ function Billing() {
                   </label>
 
                   <label className="block text-sm font-medium text-gray-700">
-                    State
+                    State *
                     <input
                       name="state"
                       value={formData.state}
@@ -390,7 +526,7 @@ function Billing() {
                   </label>
 
                   <label className="block text-sm font-medium text-gray-700">
-                    PIN code
+                    PIN code *
                     <input
                       name="pincode"
                       value={formData.pincode}
@@ -398,9 +534,23 @@ function Billing() {
                       autoComplete="postal-code"
                       inputMode="numeric"
                       pattern="[0-9]{6}"
+                      maxLength={6}
                       title="Enter a 6-digit PIN code"
                       required
                       placeholder="6-digit PIN code"
+                      className={`${inputClass} mt-2`}
+                    />
+                  </label>
+
+                  <label className="block text-sm font-medium text-gray-700">
+                    Country *
+                    <input
+                      name="country"
+                      value={formData.country}
+                      onChange={handleChange}
+                      autoComplete="country-name"
+                      required
+                      placeholder="Country"
                       className={`${inputClass} mt-2`}
                     />
                   </label>
@@ -417,6 +567,7 @@ function Billing() {
               <div>
                 <div className="mb-6 flex items-center gap-3">
                   <MdOutlinePayment className="text-2xl text-emerald-700" />
+
                   <div>
                     <h2 className="font-semibold text-gray-900">
                       Choose a demo payment method
@@ -428,65 +579,40 @@ function Billing() {
                 </div>
 
                 <div className="space-y-3">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setPaymentMethod("UPI");
-                      setPaymentError("");
-                    }}
-                    className={`flex w-full items-center gap-4 rounded-xl border p-4 text-left transition ${
-                      paymentMethod === "UPI"
-                        ? "border-emerald-600 bg-emerald-50/50"
-                        : "border-gray-200 hover:border-gray-300"
-                    }`}
-                  >
-                    <SiGooglepay className="text-2xl text-gray-800" />
-                    <span className="flex-1">
-                      <span className="block text-sm font-semibold text-gray-900">
-                        Demo UPI
-                      </span>
-                      <span className="mt-1 block text-xs text-gray-500">
-                        Simulated UPI payment
-                      </span>
-                    </span>
-                    <span
-                      className={`h-4 w-4 rounded-full border ${
-                        paymentMethod === "UPI"
-                          ? "border-4 border-emerald-600"
-                          : "border-gray-300"
+                  {PAYMENT_METHODS.map((method) => (
+                    <button
+                      key={method.id}
+                      type="button"
+                      onClick={() => {
+                        setPaymentMethod(method.id);
+                        setPaymentError("");
+                      }}
+                      className={`flex w-full items-center gap-4 rounded-xl border p-4 text-left transition ${
+                        paymentMethod === method.id
+                          ? "border-emerald-600 bg-emerald-50/50"
+                          : "border-gray-200 hover:border-gray-300"
                       }`}
-                    />
-                  </button>
+                    >
+                      {method.icon}
 
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setPaymentMethod("Card");
-                      setPaymentError("");
-                    }}
-                    className={`flex w-full items-center gap-4 rounded-xl border p-4 text-left transition ${
-                      paymentMethod === "Card"
-                        ? "border-emerald-600 bg-emerald-50/50"
-                        : "border-gray-200 hover:border-gray-300"
-                    }`}
-                  >
-                    <FaCreditCard className="text-xl text-gray-700" />
-                    <span className="flex-1">
-                      <span className="block text-sm font-semibold text-gray-900">
-                        Demo Card
+                      <span className="flex-1">
+                        <span className="block text-sm font-semibold text-gray-900">
+                          {method.title}
+                        </span>
+                        <span className="mt-1 block text-xs text-gray-500">
+                          {method.description}
+                        </span>
                       </span>
-                      <span className="mt-1 block text-xs text-gray-500">
-                        Simulated card payment
-                      </span>
-                    </span>
-                    <span
-                      className={`h-4 w-4 rounded-full border ${
-                        paymentMethod === "Card"
-                          ? "border-4 border-emerald-600"
-                          : "border-gray-300"
-                      }`}
-                    />
-                  </button>
+
+                      <span
+                        className={`h-4 w-4 rounded-full border ${
+                          paymentMethod === method.id
+                            ? "border-4 border-emerald-600"
+                            : "border-gray-300"
+                        }`}
+                      />
+                    </button>
+                  ))}
                 </div>
 
                 <div className="mt-5 rounded-lg border border-amber-200 bg-amber-50 p-4">
@@ -538,7 +664,7 @@ function Billing() {
             )}
           </section>
 
-          {/* Order summary */}
+          {/* Order Summary */}
           <aside className="rounded-xl border border-gray-200 bg-white p-5 sm:p-6 lg:sticky lg:top-24">
             <h2 className="font-semibold text-gray-900">Order summary</h2>
 

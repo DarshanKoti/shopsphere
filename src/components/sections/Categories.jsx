@@ -1,4 +1,3 @@
-import React from "react";
 import { FaArrowRightLong } from "react-icons/fa6";
 import { NavLink } from "react-router-dom";
 
@@ -11,7 +10,6 @@ import Cat6 from "../../assets/Categories/Cat6.webp";
 import Cat7 from "../../assets/Categories/Cat7.webp";
 import Cat8 from "../../assets/Categories/Cat8.webp";
 
-// Icons
 import { MdOutlineLocalShipping } from "react-icons/md";
 import { IoTimerOutline } from "react-icons/io5";
 import { RiSecurePaymentLine } from "react-icons/ri";
@@ -40,7 +38,6 @@ function Categories() {
 
   return (
     <div className="m-5 relative">
-      {/* Header */}
       <div className="flex items-center justify-between mb-5">
         <h1 className="text-xl font-bold">Shop by Category</h1>
 
@@ -52,10 +49,9 @@ function Categories() {
         </NavLink>
       </div>
 
-      {/* Categories */}
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-6">
-        {categories.map((category, index) => (
-          <NavLink key={index} to={category.path} className="group">
+        {categories.map((category) => (
+          <NavLink key={category.name} to={category.path} className="group">
             <img
               src={category.image}
               alt={category.name}
@@ -69,7 +65,6 @@ function Categories() {
         ))}
       </div>
 
-      {/* Features */}
       <div className="h-40 md:h-25 md:pl-5 bg-[#EDF4EE] rounded-xl my-5 grid grid-cols-2 md:grid-cols-4 gap-3">
         <div className="flex items-center justify-center">
           <MdOutlineLocalShipping className="text-[#5AA973] text-4xl" />

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { TfiEmail } from "react-icons/tfi";
 
 function NewsLetter() {
@@ -19,7 +19,6 @@ function NewsLetter() {
   return (
     <div className="mx-5 my-10 rounded-2xl bg-[#EDF8F1] border border-emerald-100 shadow-lg p-6 md:p-8">
       <div className="flex flex-col lg:flex-row items-center justify-between gap-8">
-        {/* Left */}
         <div className="flex items-center gap-5">
           <div className="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center">
             <TfiEmail className="text-3xl text-emerald-600" />
@@ -34,7 +33,6 @@ function NewsLetter() {
           </div>
         </div>
 
-        {/* Right */}
         <form
           onSubmit={handleSubmit}
           className="flex flex-col sm:flex-row w-full lg:w-auto gap-3"
@@ -46,7 +44,7 @@ function NewsLetter() {
             spellCheck="false"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full sm:w-80 lg:w-96 px-4 py-3 rounded-lg border border-gray-300 bg-white outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 ml-40"
+            className="w-full sm:w-80 lg:w-96 px-4 py-3 rounded-lg border border-gray-300 bg-white outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
           />
 
           <button

@@ -1,8 +1,6 @@
-import React from "react";
 import { NavLink } from "react-router-dom";
 import footerLogo from "../../assets/images/footer-logo.png";
 
-// Icons
 import { FaFacebookF, FaInstagram, FaYoutube } from "react-icons/fa";
 import { FaLocationDot, FaPhone } from "react-icons/fa6";
 import { MdMailOutline } from "react-icons/md";
@@ -14,7 +12,6 @@ function Footer() {
     <footer className="bg-[#0A0A0A] text-gray-300 mt-10">
       <div className="max-w-7xl mx-auto px-6 lg:px-10 py-12">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-10 border-b border-gray-800 pb-10">
-          {/* Brand */}
           <div>
             <img src={footerLogo} alt="ShopSphere Logo" className="h-16 mb-4" />
 
@@ -34,7 +31,6 @@ function Footer() {
             </div>
           </div>
 
-          {/* Shopping */}
           <div>
             <h2 className="text-lg font-semibold text-white mb-5">Shopping</h2>
 
@@ -70,15 +66,12 @@ function Footer() {
             </ul>
           </div>
 
-          {/* Company */}
           <div>
             <h2 className="text-lg font-semibold text-white mb-5">Company</h2>
 
             <ul className="space-y-3 text-sm">
               <li>
-                <NavLink to="/coming-soon" className={linkClass}>
-                  About Us
-                </NavLink>
+                <NavLink to="/about">About Us</NavLink>
               </li>
               <li>
                 <NavLink to="/coming-soon" className={linkClass}>
@@ -103,7 +96,6 @@ function Footer() {
             </ul>
           </div>
 
-          {/* Customer Service */}
           <div>
             <h2 className="text-lg font-semibold text-white mb-5">
               Customer Service
@@ -138,7 +130,6 @@ function Footer() {
             </ul>
           </div>
 
-          {/* Contact */}
           <div>
             <h2 className="text-lg font-semibold text-white mb-5">
               Support & Contact
@@ -176,9 +167,8 @@ function Footer() {
           </div>
         </div>
 
-        {/* Bottom */}
         <div className="flex flex-col md:flex-row justify-between items-center gap-4 pt-6 text-sm text-gray-500">
-          <p>© 2026 ShopSphere. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} ShopSphere. All rights reserved.</p>
 
           <div className="flex gap-6">
             <NavLink to="/coming-soon" className={linkClass}>

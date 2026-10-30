@@ -1,20 +1,22 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+
+const HERO_PRODUCT_IDS = [78, 101, 97, 88];
 
 function Hero() {
   const [heroProducts, setHeroProducts] = useState([]);
   const [current, setCurrent] = useState(0);
+  const [failed, setFailed] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Premium & eye-catching DummyJSON products
-    const heroIds = [78, 101, 97, 88];
-
     Promise.all(
-      heroIds.map((id) =>
+      HERO_PRODUCT_IDS.map((id) =>
         fetch(`https://dummyjson.com/products/${id}`).then((res) => res.json()),
       ),
-    ).then((data) => setHeroProducts(data));
+    )
+      .then((data) => setHeroProducts(data.filter((p) => p.images?.length)))
+      .catch(() => setFailed(true));
   }, []);
 
   useEffect(() => {
@@ -27,6 +29,8 @@ function Hero() {
     return () => clearInterval(timer);
   }, [heroProducts]);
 
+  if (failed) return null;
+
   if (!heroProducts.length) {
     return (
       <div className="h-[260px] md:h-[400px] lg:h-[480px] bg-gray-100 rounded-3xl animate-pulse" />
@@ -35,7 +39,6 @@ function Hero() {
 
   return (
     <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-white via-[#F8FAF8] to-[#EEF7F1] border border-white/60 shadow-[0_25px_60px_rgba(0,0,0,0.08)]">
-      {/* Premium Background Effects */}
       <div className="absolute -top-20 -left-20 h-72 w-72 rounded-full bg-emerald-200/30 blur-3xl" />
       <div className="absolute -bottom-24 -right-20 h-80 w-80 rounded-full bg-emerald-100/40 blur-3xl" />
       <div className="absolute top-1/2 left-1/2 h-60 w-60 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/50 blur-3xl" />
@@ -49,7 +52,6 @@ function Hero() {
             key={product.id}
             className="min-w-full flex flex-col-reverse md:flex-row items-center justify-between px-8 py-8 md:px-14 lg:px-20 relative z-10"
           >
-            {/* Left Content */}
             <div className="max-w-lg text-center md:text-left mt-8 md:mt-0">
               <p className="text-emerald-600 font-semibold uppercase tracking-[0.25em] text-sm">
                 {product.category.replace(/-/g, " ")}
@@ -71,7 +73,6 @@ function Hero() {
               </button>
             </div>
 
-            {/* Right Image */}
             <div
               className="flex justify-center cursor-pointer"
               onClick={() => navigate(`/products/${product.id}`)}
@@ -86,12 +87,12 @@ function Hero() {
         ))}
       </div>
 
-      {/* Dots */}
       <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 z-20">
-        {heroProducts.map((_, index) => (
+        {heroProducts.map((product, index) => (
           <button
-            key={index}
+            key={product.id}
             onClick={() => setCurrent(index)}
+            aria-label={`Show slide ${index + 1}`}
             className={`rounded-full transition-all duration-300 cursor-pointer ${
               current === index
                 ? "w-8 h-2 bg-emerald-600 shadow-md"

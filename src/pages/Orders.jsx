@@ -1,121 +1,93 @@
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import OrdersList from "../components/orders/OrdersList";
 import OrdersEmptyState from "../components/orders/OrdersEmptyState";
 import OrderDetailsModal from "../components/orders/OrderDetailsModal";
 import CancelProductModal from "../components/orders/CancelProductModal";
-
-const ORDERS_KEY = "orders";
-
-function readOrders() {
-  try {
-    const savedOrders = JSON.parse(localStorage.getItem(ORDERS_KEY) || "[]");
-
-    return Array.isArray(savedOrders) ? savedOrders : [];
-  } catch {
-    return [];
-  }
-}
-
-function saveOrders(orders) {
-  localStorage.setItem(ORDERS_KEY, JSON.stringify(orders));
-  window.dispatchEvent(new Event("ordersUpdated"));
-}
+import { readList, writeJSON } from "../utils/storage";
+import { useAuth } from "../context/AuthContext";
 
 function Orders() {
-  const [orders, setOrders] = useState(readOrders);
-  const [selectedProduct, setSelectedProduct] = useState(null);
-  const [cancellationProduct, setCancellationProduct] = useState(null);
+  const { user } = useAuth();
+  const ordersKey = user?.id ? `orders_${user.id}` : null;
+  const [orders, setOrders] = useState([]);
 
-  const refreshOrders = useCallback(() => {
-    setOrders(readOrders());
-  }, []);
+  const [detailsTarget, setDetailsTarget] = useState(null);
+  const [cancelTarget, setCancelTarget] = useState(null);
 
   useEffect(() => {
-    window.addEventListener("ordersUpdated", refreshOrders);
+    if (!ordersKey) {
+      setOrders([]);
+      setDetailsTarget(null);
+      setCancelTarget(null);
+      return;
+    }
 
-    return () => {
-      window.removeEventListener("ordersUpdated", refreshOrders);
-    };
-  }, [refreshOrders]);
+    // Migrate only legacy orders explicitly tagged with this account's userId.
+    // Untagged legacy orders are deliberately not assigned to any account.
+    const accountOrders = readList(ordersKey);
+    const legacyOrders = readList("orders").filter(
+      (order) => order.userId === user.id,
+    );
+    const existingIds = new Set(accountOrders.map((order) => String(order.id)));
+    const mergedOrders = [
+      ...accountOrders,
+      ...legacyOrders.filter(
+        (order) => !existingIds.has(String(order.id)),
+      ),
+    ].sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
 
-  const openDetails = (order, product, itemIndex) => {
-    setSelectedProduct({ order, product, itemIndex });
+    if (mergedOrders.length !== accountOrders.length) {
+      writeJSON(ordersKey, mergedOrders);
+    }
+
+    setOrders(mergedOrders);
+    setDetailsTarget(null);
+    setCancelTarget(null);
+  }, [ordersKey, user?.id]);
+
+  const findItem = (target) => {
+    if (!target) return null;
+
+    const order = orders.find((item) => String(item.id) === String(target.orderId));
+    const product = order?.items?.[target.itemIndex];
+
+    return order && product ? { order, product } : null;
   };
 
-  const openCancellation = (order, product, itemIndex) => {
-    setCancellationProduct({ order, product, itemIndex });
-  };
+  const details = findItem(detailsTarget);
+  const cancellation = findItem(cancelTarget);
 
-  const confirmCancellation = (cancellation) => {
-    if (!cancellationProduct) return;
+  const confirmCancellation = (cancellationInfo) => {
+    if (!cancelTarget || !ordersKey) return;
 
-    const { order, itemIndex } = cancellationProduct;
+    const { orderId, itemIndex } = cancelTarget;
 
-    const updatedOrders = orders.map((currentOrder) => {
-      if (String(currentOrder.id) !== String(order.id)) {
-        return currentOrder;
+    const updatedOrders = orders.map((order) => {
+      if (String(order.id) !== String(orderId)) return order;
+
+      const items = (order.items || []).map((item, index) =>
+        index === itemIndex && !item.cancelled
+          ? { ...item, cancelled: true, cancellation: cancellationInfo }
+          : item,
+      );
+
+      const cancelledCount = items.filter((item) => item.cancelled).length;
+
+      let status = order.status || "Processing";
+      if (items.length > 0 && cancelledCount === items.length) {
+        status = "Cancelled";
+      } else if (cancelledCount > 0) {
+        status = "Partially Cancelled";
       }
 
-      const updatedItems = (currentOrder.items || []).map((item, index) => {
-        if (index !== itemIndex || item.cancelled) {
-          return item;
-        }
-
-        return {
-          ...item,
-          cancelled: true,
-          cancellation,
-        };
-      });
-
-      const allCancelled =
-        updatedItems.length > 0 && updatedItems.every((item) => item.cancelled);
-
-      const someCancelled = updatedItems.some((item) => item.cancelled);
-
-      return {
-        ...currentOrder,
-        items: updatedItems,
-        status: allCancelled
-          ? "Cancelled"
-          : someCancelled
-            ? "Partially Cancelled"
-            : currentOrder.status || "Processing",
-      };
+      return { ...order, items, status };
     });
 
-    saveOrders(updatedOrders);
+    writeJSON(ordersKey, updatedOrders);
     setOrders(updatedOrders);
-    setCancellationProduct(null);
-    setSelectedProduct(null);
+    setCancelTarget(null);
+    setDetailsTarget(null);
   };
-
-  const handleViewDetails = (order, product, itemIndex) => {
-    openDetails(order, product, itemIndex);
-  };
-
-  const handleCancelProduct = (order, product, itemIndex) => {
-    openCancellation(order, product, itemIndex);
-  };
-
-  const getCurrentProduct = (selection) => {
-    if (!selection) return null;
-
-    const currentOrder = orders.find(
-      (order) => String(order.id) === String(selection.order.id),
-    );
-
-    if (!currentOrder) return null;
-
-    return {
-      order: currentOrder,
-      product: currentOrder.items?.[selection.itemIndex],
-      itemIndex: selection.itemIndex,
-    };
-  };
-
-  const currentDetails = getCurrentProduct(selectedProduct);
-  const currentCancellation = getCurrentProduct(cancellationProduct);
 
   return (
     <main className="mx-auto min-h-screen w-full max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
@@ -135,27 +107,28 @@ function Orders() {
       ) : (
         <OrdersList
           orders={orders}
-          onViewDetails={handleViewDetails}
-          onCancelProduct={handleCancelProduct}
+          onViewDetails={(order, itemIndex) =>
+            setDetailsTarget({ orderId: order.id, itemIndex })
+          }
         />
       )}
 
-      {currentDetails?.product && (
+      {details && (
         <OrderDetailsModal
-          order={currentDetails.order}
-          product={currentDetails.product}
-          onClose={() => setSelectedProduct(null)}
+          order={details.order}
+          product={details.product}
+          onClose={() => setDetailsTarget(null)}
           onCancelProduct={() => {
-            setCancellationProduct(currentDetails);
-            setSelectedProduct(null);
+            setCancelTarget(detailsTarget);
+            setDetailsTarget(null);
           }}
         />
       )}
 
-      {currentCancellation?.product && (
+      {cancellation && (
         <CancelProductModal
-          product={currentCancellation.product}
-          onClose={() => setCancellationProduct(null)}
+          product={cancellation.product}
+          onClose={() => setCancelTarget(null)}
           onConfirm={confirmCancellation}
         />
       )}

@@ -5,22 +5,7 @@ import {
   FiCalendar,
   FiPackage,
 } from "react-icons/fi";
-
-function formatDate(date) {
-  if (!date) return "Not available";
-
-  const parsedDate = new Date(date);
-
-  if (Number.isNaN(parsedDate.getTime())) {
-    return "Not available";
-  }
-
-  return parsedDate.toLocaleDateString("en-IN", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
-}
+import { formatCategory, formatDate } from "../../utils/format";
 
 function formatMoney(amount) {
   return `$${(Number(amount) || 0).toLocaleString("en-IN", {
@@ -82,7 +67,6 @@ function OrderDetailsModal({ order, product, onClose, onCancelProduct }) {
         className="flex max-h-[92dvh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl"
         onClick={(event) => event.stopPropagation()}
       >
-        {/* Header */}
         <div className="flex shrink-0 items-center justify-between border-b border-gray-100 px-4 py-4 sm:px-6">
           <div className="flex min-w-0 items-center gap-3">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gray-100 text-gray-700">
@@ -107,10 +91,11 @@ function OrderDetailsModal({ order, product, onClose, onCancelProduct }) {
             onClick={onClose}
             aria-label="Close product details"
             className="ml-3 flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-gray-500 hover:bg-gray-100"
-          ></button>
+          >
+            <FiX size={20} />
+          </button>
         </div>
 
-        {/* Scrollable content */}
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-4 sm:p-6">
           <section className="flex flex-col gap-4 sm:flex-row sm:gap-6">
             <div className="flex h-44 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-gray-50 sm:h-48 sm:w-48">
@@ -134,7 +119,7 @@ function OrderDetailsModal({ order, product, onClose, onCancelProduct }) {
 
               {product.category && (
                 <p className="mt-1 text-sm capitalize text-gray-500">
-                  Category: {product.category.replaceAll("-", " ")}
+                  Category: {formatCategory(product.category)}
                 </p>
               )}
 
@@ -245,7 +230,6 @@ function OrderDetailsModal({ order, product, onClose, onCancelProduct }) {
           )}
         </div>
 
-        {/* Footer */}
         <div className="flex shrink-0 flex-col-reverse gap-3 border-t border-gray-100 bg-white px-4 py-4 sm:flex-row sm:justify-end sm:px-6">
           <button
             type="button"
