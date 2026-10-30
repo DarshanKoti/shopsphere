@@ -47,7 +47,7 @@ function Cart() {
     0,
   );
 
-  const shipping = cartItems.length ? 10 : 0;
+  const shipping = subtotal === 0 || subtotal >= 100 ? 0 : 10;
   const total = subtotal + shipping;
 
   return (
@@ -167,9 +167,12 @@ function Cart() {
               </div>
             </div>
 
-            <button className="w-full mt-6 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 rounded-lg transition cursor-pointer">
+            <NavLink
+              to="/billing"
+              className="block w-full text-center mt-6 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 rounded-lg transition"
+            >
               Proceed to Checkout
-            </button>
+            </NavLink>
 
             <NavLink
               to="/products"

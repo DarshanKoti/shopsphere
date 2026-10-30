@@ -1,4 +1,4 @@
-import { Routes, Route, useLocation } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 
 import Navbar from "./components/layouts/Navbar";
 import Footer from "./components/layouts/Footer";
@@ -10,10 +10,9 @@ import Cart from "./pages/Cart";
 import Profile from "./pages/Profile";
 import Contact from "./pages/Contact";
 import Construction from "./pages/Construction";
+import Billing from "./pages/Billing";
 
 function App() {
-  const location = useLocation();
-
   return (
     <>
       <Navbar />
@@ -26,9 +25,12 @@ function App() {
         <Route path="/profile" element={<Profile />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/coming-soon" element={<Construction />} />
+        <Route path="/billing" element={<Billing />} />
+
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
 
-      {location.pathname === "/" && <Footer />}
+      <Footer />
     </>
   );
 }

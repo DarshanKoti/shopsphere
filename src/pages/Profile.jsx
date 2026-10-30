@@ -5,7 +5,7 @@ import { TbLogout } from "react-icons/tb";
 import { NavLink, useNavigate } from "react-router-dom";
 
 import MyProfile from "../components/sections/ProfileSections/MyProfile";
-import Orders from "../components/sections/ProfileSections/Orders";
+import Orders from "./Orders";
 import Wishlist from "../components/sections/ProfileSections/Wishlist";
 
 function Profile() {
